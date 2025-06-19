@@ -52,7 +52,7 @@ export const getBookById = async (req: Request, res: Response) => {
 
 export const addBook = async (req: Request, res: Response) => {
   try {
-    const { title, author, language } = req.body;
+    const { title, author, language, publishYear } = req.body;
     const image = req.file;
     let imageUrl = "";
     if (image) {
@@ -66,6 +66,7 @@ export const addBook = async (req: Request, res: Response) => {
       addedBy: userPid,
       imageUrl,
       language,
+      publishYear: parseInt(publishYear),
     });
     res.status(201).json(newBook);
     return;
@@ -79,7 +80,7 @@ export const addBook = async (req: Request, res: Response) => {
 export const editBook = async (req: Request, res: Response) => {
   try {
     const { bookPid } = req.params;
-    const { title, author, language } = req.body;
+    const { title, author, language, publishYear } = req.body;
     let newImageUrl = "";
     if (req.file) {
       newImageUrl = await uploadImage(req.file);
@@ -97,6 +98,7 @@ export const editBook = async (req: Request, res: Response) => {
     book.title = title;
     book.author = author;
     book.language = language;
+    book.publishYear = parseInt(publishYear);
     if (newImageUrl) {
       book.imageUrl = newImageUrl;
     }
