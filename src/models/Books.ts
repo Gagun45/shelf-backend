@@ -8,6 +8,7 @@ interface BookType {
   imageUrl: string;
   language: string;
   publishYear: number;
+  genres: [string];
 }
 
 const bookSchema = new Schema<BookType>({
@@ -37,6 +38,10 @@ const bookSchema = new Schema<BookType>({
   },
   publishYear: {
     type: Number,
+    required: true,
+  },
+  genres: {
+    type: [String],
     required: true,
   },
 });
