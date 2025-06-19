@@ -30,3 +30,29 @@ export const createUser = async (req: Request, res: Response) => {
     return;
   }
 };
+
+export const getUserData = async (req: Request, res: Response) => {
+  try {
+    const auth0Id = req.auth?.payload.sub;
+
+    if (!auth0Id) {
+      res.status(401).json({ message: "Unautorized" });
+      return;
+    }
+    const existingUser = await User.findOne({ auth0Id }).select(
+      "userPid role -_id"
+    );
+
+    if (!existingUser) {
+      res.status(401).json({ message: "User not found" });
+      return;
+    }
+
+    res.status(200).json(existingUser.toObject());
+    return;
+  } catch (error) {
+    console.log("Error getting userData: ", error);
+    res.status(500).json({ message: "Something went wrong" });
+    return;
+  }
+};

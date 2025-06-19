@@ -3,6 +3,7 @@ interface UserType {
   email: string;
   auth0Id: string;
   userPid: string;
+  role: "admin" | "user";
 }
 
 const userSchema = new Schema<UserType>({
@@ -20,6 +21,11 @@ const userSchema = new Schema<UserType>({
     type: String,
     required: true,
     unique: true,
+  },
+  role: {
+    type: String,
+    required: true,
+    default: "user",
   },
 });
 
