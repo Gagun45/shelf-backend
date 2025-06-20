@@ -21,9 +21,46 @@ const uploadImage = async (file: Express.Multer.File) => {
   return uploadResponse.url;
 };
 
+const queryContsructor = (req: Request) => {
+  const { title, year, genres } = req.query;
+  let query: any = {};
+  if (title) {
+    query.title = { $regex: title, $options: "i" };
+  }
+  if (year) {
+    query.publishYear = { $gte: year };
+  }
+  if (genres) {
+    const genresArray = typeof genres === "string" ? genres.split(",") : [];
+    query.genres = { $all: genresArray };
+  }
+  return query;
+};
+
+const sortConstructor = (req: Request) => {
+  const { sortOption } = req.query;
+  let sort: any = {};
+  switch (sortOption) {
+    case "YEAR-ASC":
+      sort.publishYear = 1;
+      break;
+    case "YEAR-DESC":
+      sort.publishYear = -1;
+      break;
+    default:
+      sort.publishYear = 1;
+      break;
+  }
+  return sort;
+};
+
 export const getAllBooks = async (req: Request, res: Response) => {
   try {
-    const books = await Book.find().select("-_id -__v");
+    const query = queryContsructor(req);
+    const sort = sortConstructor(req);
+    console.log(query);
+
+    const books = await Book.find(query).sort(sort).select("-_id -__v");
     res.status(200).json(books);
     return;
   } catch (error) {
