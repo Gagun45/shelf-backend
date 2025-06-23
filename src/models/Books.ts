@@ -9,6 +9,7 @@ interface BookType {
   language: string;
   publishYear: number;
   genres: [string];
+  price: number;
 }
 
 const bookSchema = new Schema<BookType>({
@@ -43,6 +44,10 @@ const bookSchema = new Schema<BookType>({
   genres: {
     type: [String],
     required: true,
+  },
+  price: {
+    type: Number,
+    requiredPaths: true,
   },
 });
 

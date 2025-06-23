@@ -22,17 +22,26 @@ const uploadImage = async (file: Express.Multer.File) => {
 };
 
 const queryContsructor = (req: Request) => {
-  const { title, year, genres } = req.query;
+  const { title, toYear, fromYear, genres, language, toPrice, fromPrice } = req.query;
   let query: any = {};
   if (title) {
     query.title = { $regex: title, $options: "i" };
   }
-  if (year) {
-    query.publishYear = { $gte: year };
+  if (fromYear || toYear) {
+    query.publishYear = { $gte: fromYear ?? 1980, $lte: toYear ?? 2025 };
   }
+
+  if (fromPrice || toPrice) {
+    query.price = { $gte: fromPrice ?? 0, $lte: toPrice ?? 2000 };
+  }
+
   if (genres) {
     const genresArray = typeof genres === "string" ? genres.split(",") : [];
     query.genres = { $all: genresArray };
+  }
+  if (language) {
+    const languages = typeof language === "string" ? language.split(",") : [];
+    query.language = { $in: languages };
   }
   return query;
 };
@@ -41,14 +50,26 @@ const sortConstructor = (req: Request) => {
   const { sortOption } = req.query;
   let sort: any = {};
   switch (sortOption) {
-    case "YEAR-ASC":
+    case "YearAsc":
       sort.publishYear = 1;
       break;
-    case "YEAR-DESC":
+    case "YearDesc":
       sort.publishYear = -1;
       break;
+    case "PriceAsc":
+      sort.price = 1;
+      break;
+    case "PriceDesc":
+      sort.price = -1;
+      break;
+    case "AlphabetAsc":
+      sort.title = 1;
+      break;
+    case "AlphabetDesc":
+      sort.title = -1;
+      break;
     default:
-      sort.publishYear = 1;
+      sort.title = 1;
       break;
   }
   return sort;
@@ -56,9 +77,9 @@ const sortConstructor = (req: Request) => {
 
 export const getAllBooks = async (req: Request, res: Response) => {
   try {
+    console.log('qweqwe')
     const query = queryContsructor(req);
     const sort = sortConstructor(req);
-    console.log(query);
 
     const books = await Book.find(query).sort(sort).select("-_id -__v");
     res.status(200).json(books);
@@ -89,7 +110,7 @@ export const getBookById = async (req: Request, res: Response) => {
 
 export const addBook = async (req: Request, res: Response) => {
   try {
-    const { title, author, language, publishYear, genres } = req.body;
+    const { title, author, language, publishYear, genres, price } = req.body;
     const image = req.file;
     let imageUrl = "";
     if (image) {
@@ -103,6 +124,7 @@ export const addBook = async (req: Request, res: Response) => {
       addedBy: userPid,
       imageUrl,
       language,
+      price,
       publishYear: parseInt(publishYear),
       genres,
     });
@@ -118,7 +140,7 @@ export const addBook = async (req: Request, res: Response) => {
 export const editBook = async (req: Request, res: Response) => {
   try {
     const { bookPid } = req.params;
-    const { title, author, language, publishYear, genres } = req.body;
+    const { title, author, language, publishYear, genres, price } = req.body;
     let newImageUrl = "";
     if (req.file) {
       newImageUrl = await uploadImage(req.file);
@@ -137,6 +159,7 @@ export const editBook = async (req: Request, res: Response) => {
     book.author = author;
     book.language = language;
     book.genres = genres;
+    book.price = price;
     book.publishYear = parseInt(publishYear);
     if (newImageUrl) {
       book.imageUrl = newImageUrl;
