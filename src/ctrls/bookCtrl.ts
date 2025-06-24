@@ -22,7 +22,8 @@ const uploadImage = async (file: Express.Multer.File) => {
 };
 
 const queryContsructor = (req: Request) => {
-  const { title, toYear, fromYear, genres, language, toPrice, fromPrice } = req.query;
+  const { title, toYear, fromYear, genres, language, toPrice, fromPrice } =
+    req.query;
   let query: any = {};
   if (title) {
     query.title = { $regex: title, $options: "i" };
@@ -77,15 +78,51 @@ const sortConstructor = (req: Request) => {
 
 export const getAllBooks = async (req: Request, res: Response) => {
   try {
-    console.log('qweqwe')
     const query = queryContsructor(req);
     const sort = sortConstructor(req);
+    const { limit, page } = req.query;
+    const newLimit = typeof limit === "string" ? parseInt(limit) : 100;
+    const newPage = typeof page === "string" ? parseInt(page) : 100;
 
-    const books = await Book.find(query).sort(sort).select("-_id -__v");
-    res.status(200).json(books);
+    const [books, totalBooks] = await Promise.all([
+      Book.find(query)
+        .sort(sort)
+        .limit(newLimit)
+        .skip(newLimit * (newPage - 1))
+        .select("-_id -__v"),
+      Book.find(query).sort(sort).countDocuments(),
+    ]);
+    res.status(200).json({ books, totalBooks });
     return;
   } catch (error) {
     console.log("Error fetching all books: ", error);
+    res.status(500).json({ message: "Something went wrong" });
+    return;
+  }
+};
+
+export const getMyBooks = async (req: Request, res: Response) => {
+  try {
+    const userPid = req.userPid;
+    const query = queryContsructor(req);
+    query.addedBy = req.userPid;
+    const sort = sortConstructor(req);
+    const { limit, page } = req.query;
+    const newLimit = typeof limit === "string" ? parseInt(limit) : 100;
+    const newPage = typeof page === "string" ? parseInt(page) : 100;
+
+    const [books, totalBooks] = await Promise.all([
+      Book.find(query)
+        .sort(sort)
+        .limit(newLimit)
+        .skip(newLimit * (newPage - 1))
+        .select("-_id -__v"),
+      Book.find(query).sort(sort).countDocuments(),
+    ]);
+    res.status(200).json({ books, totalBooks });
+    return;
+  } catch (error) {
+    console.log("Error fetching my books: ", error);
     res.status(500).json({ message: "Something went wrong" });
     return;
   }
