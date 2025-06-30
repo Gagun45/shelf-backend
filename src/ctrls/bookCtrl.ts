@@ -22,7 +22,7 @@ const uploadImage = async (file: Express.Multer.File) => {
 };
 
 const queryContsructor = (req: Request) => {
-  const { title, toYear, fromYear, genres, language, toPrice, fromPrice } =
+  const { title, toYear, fromYear, genres, languages, toPrice, fromPrice } =
     req.query;
   let query: any = {};
   if (title) {
@@ -40,9 +40,9 @@ const queryContsructor = (req: Request) => {
     const genresArray = typeof genres === "string" ? genres.split(",") : [];
     query.genres = { $all: genresArray };
   }
-  if (language) {
-    const languages = typeof language === "string" ? language.split(",") : [];
-    query.language = { $in: languages };
+  if (languages) {
+    const languagesArray = typeof languages === "string" ? languages.split(",") : [];
+    query.language = { $in: languagesArray };
   }
   return query;
 };
