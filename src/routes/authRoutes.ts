@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { jwtCheck, jwtParse } from "../middleware/auth";
+import { jwtCheck } from "../middleware/auth";
 import { createUser, getUserData } from "../ctrls/authCtrl";
 
 const router = Router();

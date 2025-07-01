@@ -1,11 +1,15 @@
 import { Router } from "express";
-import { createOrder, getMyOrders } from "../ctrls/orderCtrl";
-import { jwtCheck, jwtParse } from "../middleware/auth";
+import { createOrder, editOrder, getAllOrders, getMyOrders } from "../ctrls/orderCtrl";
+import { isLoggedIn, isSuperAdmin, jwtCheck } from "../middleware/auth";
 
 const router = Router();
 
-router.get("/my-orders", jwtCheck, jwtParse, getMyOrders);
+router.get("/my-orders", jwtCheck, isLoggedIn, getMyOrders);
 
-router.post("/create-order", jwtCheck, jwtParse, createOrder);
+router.get('/all-orders', jwtCheck, isLoggedIn, isSuperAdmin, getAllOrders )
+
+router.post("/create-order", jwtCheck, isLoggedIn, createOrder);
+
+router.patch('/edit-order', jwtCheck, isLoggedIn, isSuperAdmin, editOrder)
 
 export default router;

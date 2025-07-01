@@ -41,7 +41,8 @@ const queryContsructor = (req: Request) => {
     query.genres = { $all: genresArray };
   }
   if (languages) {
-    const languagesArray = typeof languages === "string" ? languages.split(",") : [];
+    const languagesArray =
+      typeof languages === "string" ? languages.split(",") : [];
     query.language = { $in: languagesArray };
   }
   return query;
@@ -103,7 +104,6 @@ export const getAllBooks = async (req: Request, res: Response) => {
 
 export const getMyBooks = async (req: Request, res: Response) => {
   try {
-    const userPid = req.userPid;
     const query = queryContsructor(req);
     query.addedBy = req.userPid;
     const sort = sortConstructor(req);
@@ -140,6 +140,23 @@ export const getBookById = async (req: Request, res: Response) => {
     return;
   } catch (error) {
     console.log("Error fetching a book by id: ", error);
+    res.status(500).json({ message: "Something went wrong" });
+    return;
+  }
+};
+
+export const deleteBookById = async (req: Request, res: Response) => {
+  try {
+    const { bookPid } = req.params;
+    const book = await Book.findOneAndDelete({ bookPid, addedBy: req.userPid });
+    if (!book) {
+      res.status(404).json({ message: "Book not found" });
+      return;
+    }
+    res.sendStatus(200);
+    return;
+  } catch (error) {
+    console.log("Error deleting a book by id: ", error);
     res.status(500).json({ message: "Something went wrong" });
     return;
   }

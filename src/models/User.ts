@@ -3,7 +3,7 @@ interface UserType {
   email: string;
   auth0Id: string;
   userPid: string;
-  role: "admin" | "user";
+  role: "user" | "admin" | "superadmin";
 }
 
 const userSchema = new Schema<UserType>({

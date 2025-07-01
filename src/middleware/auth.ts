@@ -6,6 +6,7 @@ declare global {
   namespace Express {
     interface Request {
       userPid: string;
+      role: string;
     }
   }
 }
@@ -16,7 +17,7 @@ export const jwtCheck = auth({
   tokenSigningAlg: "RS256",
 });
 
-export const jwtParse = async (
+export const isLoggedIn = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -29,10 +30,37 @@ export const jwtParse = async (
       return;
     }
     req.userPid = user.userPid;
+    req.role = user.role;
     next();
   } catch (error) {
     console.log("Error parsing jwt ", error);
     res.status(500).json({ message: "Something went wrong" });
     return;
   }
+};
+
+export const isAdminAtLeast = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const allowedRoles = ["admin", "superadmin"];
+  if (!allowedRoles.includes(req.role)) {
+    res.status(403).json({ message: "Access denied" });
+    return;
+  }
+  next();
+};
+
+export const isSuperAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const allowedRoles = ["superadmin"];
+  if (!allowedRoles.includes(req.role)) {
+    res.status(403).json({ message: "Access denied" });
+    return;
+  }
+  next();
 };

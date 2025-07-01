@@ -53,3 +53,27 @@ export const getMyOrders = async (req: Request, res: Response) => {
     return;
   }
 };
+export const getAllOrders = async (req: Request, res: Response) => {
+  try {
+    const orders = await Order.find().select("-_id -__v");
+    res.status(200).json(orders);
+    return;
+  } catch (error) {
+    console.log("Error fetching all orders", error);
+    res.status(500).json({ message: "Something went wrong" });
+    return;
+  }
+};
+
+export const editOrder = async (req: Request, res: Response) => {
+  try {
+    const { status, orderPid } = req.body;
+    await Order.findOneAndUpdate({ orderPid }, { status });
+    res.status(200).json({ message: "Order edited" });
+    return;
+  } catch (error) {
+    console.log("Error editing an order", error);
+    res.status(500).json({ message: "Something went wrong" });
+    return;
+  }
+};

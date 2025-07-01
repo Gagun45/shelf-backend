@@ -12,6 +12,7 @@ interface OrderInterface {
   books: BookOrderInterface[];
   totalPrice: number;
   userPid: string;
+  status: "pending" | "success" | "cancelled";
 }
 
 const orderSchema = new Schema<OrderInterface>({
@@ -38,6 +39,11 @@ const orderSchema = new Schema<OrderInterface>({
       quantity: { type: Number, required: true },
     },
   ],
+  status: {
+    type: String,
+    required: true,
+    default: "pending",
+  },
 });
 
 const Order = mongoose.model<OrderInterface>("Order", orderSchema);
