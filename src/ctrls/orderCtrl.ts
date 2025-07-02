@@ -43,14 +43,9 @@ export const createOrder = async (req: Request, res: Response) => {
 
 export const getMyOrders = async (req: Request, res: Response) => {
   try {
-    const userPid = req.userPid;
-    const { limit, page, sortOption } = req.query;
-    const allowedSortOptions = ["pending", "success", "cancelled"];
-    let orderQuery: any = {};
+    const orderQuery = queryConstructor(req);
     orderQuery.userPid = req.userPid;
-    if (sortOption && allowedSortOptions.includes(sortOption.toString())) {
-      orderQuery.status = sortOption;
-    }
+    const { limit, page } = req.query;
     const newLimit = typeof limit === "string" ? parseInt(limit) : 5;
     const newPage = typeof page === "string" ? parseInt(page) : 5;
     const [orders, totalOrders] = await Promise.all([
@@ -68,13 +63,10 @@ export const getMyOrders = async (req: Request, res: Response) => {
     return;
   }
 };
+
 export const getAllOrders = async (req: Request, res: Response) => {
-  const { limit, page, sortOption } = req.query;
-  const allowedSortOptions = ["pending", "success", "cancelled"];
-  let orderQuery: any = {};
-  if (sortOption && allowedSortOptions.includes(sortOption.toString())) {
-    orderQuery.status = sortOption;
-  }
+  const orderQuery = queryConstructor(req);
+  const { limit, page } = req.query;
   const newLimit = typeof limit === "string" ? parseInt(limit) : 5;
   const newPage = typeof page === "string" ? parseInt(page) : 5;
   try {
@@ -105,4 +97,19 @@ export const editOrder = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" });
     return;
   }
+};
+
+const queryConstructor = (req: Request) => {
+  const allowedSortOptions = ["pending", "success", "cancelled"];
+  const { limit, page, sortOption, searchQuery } = req.query;
+  let orderQuery: any = {};
+  if (sortOption && allowedSortOptions.includes(sortOption.toString())) {
+    orderQuery.status = sortOption;
+  }
+  if (searchQuery) {
+    orderQuery.books = {
+      $elemMatch: { title: { $regex: searchQuery, $options: "i" } },
+    };
+  }
+  return orderQuery;
 };
