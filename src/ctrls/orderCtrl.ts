@@ -44,8 +44,23 @@ export const createOrder = async (req: Request, res: Response) => {
 export const getMyOrders = async (req: Request, res: Response) => {
   try {
     const userPid = req.userPid;
-    const orders = await Order.find({ userPid }).select("-_id -__v");
-    res.status(200).json(orders);
+    const { limit, page, sortOption } = req.query;
+    const allowedSortOptions = ["pending", "success", "cancelled"];
+    let orderQuery: any = {};
+    orderQuery.userPid = req.userPid;
+    if (sortOption && allowedSortOptions.includes(sortOption.toString())) {
+      orderQuery.status = sortOption;
+    }
+    const newLimit = typeof limit === "string" ? parseInt(limit) : 5;
+    const newPage = typeof page === "string" ? parseInt(page) : 5;
+    const [orders, totalOrders] = await Promise.all([
+      Order.find(orderQuery)
+        .limit(newLimit)
+        .skip(newLimit * (newPage - 1))
+        .select("-_id -__v"),
+      Order.find(orderQuery).countDocuments(),
+    ]);
+    res.status(200).json({ orders, totalOrders });
     return;
   } catch (error) {
     console.log("Error fetching my orders", error);
@@ -54,9 +69,23 @@ export const getMyOrders = async (req: Request, res: Response) => {
   }
 };
 export const getAllOrders = async (req: Request, res: Response) => {
+  const { limit, page, sortOption } = req.query;
+  const allowedSortOptions = ["pending", "success", "cancelled"];
+  let orderQuery: any = {};
+  if (sortOption && allowedSortOptions.includes(sortOption.toString())) {
+    orderQuery.status = sortOption;
+  }
+  const newLimit = typeof limit === "string" ? parseInt(limit) : 5;
+  const newPage = typeof page === "string" ? parseInt(page) : 5;
   try {
-    const orders = await Order.find().select("-_id -__v");
-    res.status(200).json(orders);
+    const [orders, totalOrders] = await Promise.all([
+      Order.find(orderQuery)
+        .select("-_id -__v")
+        .limit(newLimit)
+        .skip(newLimit * (newPage - 1)),
+      Order.find(orderQuery).countDocuments(),
+    ]);
+    res.status(200).json({ orders, totalOrders });
     return;
   } catch (error) {
     console.log("Error fetching all orders", error);
