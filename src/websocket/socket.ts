@@ -5,23 +5,24 @@ interface UserSocketMap {
   [userPid: string]: string;
 }
 
-let io: SocketIoServer | null = null;
+let IO_CLIENT: SocketIoServer | null = null;
 const userSocketMap: UserSocketMap = {};
 
 export const initSocket = (server: ServerHttp) => {
-  io = new SocketIoServer(server, {
+  console.log('SOCKET INITIALIZED')
+  IO_CLIENT = new SocketIoServer(server, {
     cors: {
       origin: "*",
       methods: ["GET", "POST"],
     },
   });
-  io.on("connection", (socket) => {
+  IO_CLIENT.on("connection", (socket) => {
     socket.on("register", (userPid: string) => {
       userSocketMap[userPid] = socket.id;
       console.log(`User ${userPid} mapped to ${socket.id}`);
     });
   });
-  return io;
+  return IO_CLIENT;
 };
 
 export const sendPrivateMessage = (
@@ -29,15 +30,15 @@ export const sendPrivateMessage = (
   event: string,
   message: string
 ) => {
-  const io = getIo();
+  const ios = getIo();
   const socketId = userSocketMap[userPid]
   console.log('sending private msg', socketId)
-  io.to(socketId).emit(event, { message });
+  ios.to(socketId).emit(event, { message });
 };
 
 export const getIo = () => {
-  if (!io) {
+  if (!IO_CLIENT) {
     throw new Error("sock not");
   }
-  return io;
+  return IO_CLIENT;
 };

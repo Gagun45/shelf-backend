@@ -68,6 +68,7 @@ export const getMyOrders = async (req: Request, res: Response) => {
 export const getAllOrders = async (req: Request, res: Response) => {
   const orderQuery = queryConstructor(req);
   const { limit, page } = req.query;
+
   const newLimit = typeof limit === "string" ? parseInt(limit) : 5;
   const newPage = typeof page === "string" ? parseInt(page) : 5;
   try {

@@ -3,7 +3,7 @@ import Book from "../models/Books";
 import shortid from "shortid";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
-import { getIo, sendPrivateMessage } from "../websocket/socket";
+import { getIo } from "../websocket/socket";
 
 const storage = multer.memoryStorage();
 
@@ -83,6 +83,8 @@ export const getAllBooks = async (req: Request, res: Response) => {
     const query = queryContsructor(req);
     const sort = sortConstructor(req);
     const { limit, page } = req.query;
+    const io = getIo();
+    io.emit("receive_message", { message: "ALL BOOKS CHECK" });
     const newLimit = typeof limit === "string" ? parseInt(limit) : 100;
     const newPage = typeof page === "string" ? parseInt(page) : 100;
 
