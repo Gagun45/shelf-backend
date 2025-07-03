@@ -4,6 +4,7 @@ import Order from "../models/Order";
 import Book from "../models/Books";
 import shortid from "shortid";
 import { sendPrivateMessage } from "../websocket/socket";
+import Notification from "../models/Notification";
 
 export const createOrder = async (req: Request, res: Response) => {
   try {
@@ -47,10 +48,13 @@ export const getMyOrders = async (req: Request, res: Response) => {
     const orderQuery = queryConstructor(req);
     orderQuery.userPid = req.userPid;
     const { limit, page } = req.query;
+    const sort: any = {};
+    sort.createdAt = -1;
     const newLimit = typeof limit === "string" ? parseInt(limit) : 5;
     const newPage = typeof page === "string" ? parseInt(page) : 5;
     const [orders, totalOrders] = await Promise.all([
       Order.find(orderQuery)
+        .sort(sort)
         .limit(newLimit)
         .skip(newLimit * (newPage - 1))
         .select("-_id -__v"),
@@ -68,15 +72,18 @@ export const getMyOrders = async (req: Request, res: Response) => {
 export const getAllOrders = async (req: Request, res: Response) => {
   const orderQuery = queryConstructor(req);
   const { limit, page } = req.query;
+  const sort: any = {};
+  sort.createdAt = -1;
 
   const newLimit = typeof limit === "string" ? parseInt(limit) : 5;
   const newPage = typeof page === "string" ? parseInt(page) : 5;
   try {
     const [orders, totalOrders] = await Promise.all([
       Order.find(orderQuery)
-        .select("-_id -__v")
+        .sort(sort)
         .limit(newLimit)
-        .skip(newLimit * (newPage - 1)),
+        .skip(newLimit * (newPage - 1))
+        .select("-_id -__v"),
       Order.find(orderQuery).countDocuments(),
     ]);
     res.status(200).json({ orders, totalOrders });
@@ -97,10 +104,15 @@ export const editOrder = async (req: Request, res: Response) => {
       { new: true }
     );
     if (newOrder) {
+      await Notification.create({
+        message: `Order status changed to ${newOrder.status}`,
+        notificationPid: shortid.generate(),
+        userPid: newOrder.userPid,
+      });
       sendPrivateMessage(
         newOrder.userPid,
         "private_message",
-        `Your order status has been changed to ${newOrder.status}`
+        `Order status update`
       );
     }
     res.status(200).json({ message: "Order edited" });

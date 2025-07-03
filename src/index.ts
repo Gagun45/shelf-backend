@@ -5,6 +5,7 @@ import "dotenv/config";
 import authRoutes from "./routes/authRoutes";
 import bookRoutes from "./routes/bookRoutes";
 import orderRoutes from "./routes/orderRoutes";
+import notificationRoutes from "./routes/notificationRoutes";
 import { v2 as cloudinary } from "cloudinary";
 import http from "http";
 import { initSocket } from "./websocket/socket";
@@ -36,6 +37,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/books", bookRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 server.listen(7000, () => {
   console.log("Listening on port 7000");
