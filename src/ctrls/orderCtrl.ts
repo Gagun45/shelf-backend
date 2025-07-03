@@ -3,6 +3,7 @@ import type { BookOrderInterface } from "../models/Order";
 import Order from "../models/Order";
 import Book from "../models/Books";
 import shortid from "shortid";
+import { sendPrivateMessage } from "../websocket/socket";
 
 export const createOrder = async (req: Request, res: Response) => {
   try {
@@ -89,7 +90,18 @@ export const getAllOrders = async (req: Request, res: Response) => {
 export const editOrder = async (req: Request, res: Response) => {
   try {
     const { status, orderPid } = req.body;
-    await Order.findOneAndUpdate({ orderPid }, { status });
+    const newOrder = await Order.findOneAndUpdate(
+      { orderPid },
+      { status },
+      { new: true }
+    );
+    if (newOrder) {
+      sendPrivateMessage(
+        newOrder.userPid,
+        "private_message",
+        `Your order status has been changed to ${newOrder.status}`
+      );
+    }
     res.status(200).json({ message: "Order edited" });
     return;
   } catch (error) {

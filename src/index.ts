@@ -6,6 +6,8 @@ import authRoutes from "./routes/authRoutes";
 import bookRoutes from "./routes/bookRoutes";
 import orderRoutes from "./routes/orderRoutes";
 import { v2 as cloudinary } from "cloudinary";
+import http from "http";
+import { initSocket } from "./websocket/socket";
 
 const app = express();
 
@@ -24,12 +26,17 @@ app.use(
     origin: "*",
   })
 );
+
+const server = http.createServer(app);
+
+const io = initSocket(server);
+
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/books", bookRoutes);
 app.use("/api/orders", orderRoutes);
 
-app.listen(7000, () => {
+server.listen(7000, () => {
   console.log("Listening on port 7000");
 });
