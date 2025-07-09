@@ -10,6 +10,8 @@ import {
 import { isAdminAtLeast, isLoggedIn, jwtCheck } from "../middleware/auth";
 
 import multer from "multer";
+import validateRequest from "../middleware/validateRequest";
+import { bookSchema } from "../validators/book.validator";
 
 const router = Router();
 
@@ -30,6 +32,7 @@ router.post(
   isLoggedIn,
   isAdminAtLeast,
   upload.single("imageFile"),
+  validateRequest(bookSchema),
   addBook
 );
 
@@ -43,6 +46,7 @@ router.put(
   isLoggedIn,
   isAdminAtLeast,
   upload.single("imageFile"),
+  validateRequest(bookSchema),
   editBook
 );
 
