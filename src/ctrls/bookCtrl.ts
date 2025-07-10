@@ -83,8 +83,8 @@ export const getAllBooks = async (req: Request, res: Response) => {
     const query = queryContsructor(req);
     const sort = sortConstructor(req);
     const { limit, page } = req.query;
-    const newLimit = typeof limit === "string" ? parseInt(limit) : 100;
-    const newPage = typeof page === "string" ? parseInt(page) : 100;
+    const newLimit = typeof limit === "string" ? parseInt(limit) : 5;
+    const newPage = typeof page === "string" ? parseInt(page) : 1;
 
     const [books, totalBooks] = await Promise.all([
       Book.find(query)
@@ -109,8 +109,8 @@ export const getMyBooks = async (req: Request, res: Response) => {
     query.addedBy = req.userPid;
     const sort = sortConstructor(req);
     const { limit, page } = req.query;
-    const newLimit = typeof limit === "string" ? parseInt(limit) : 100;
-    const newPage = typeof page === "string" ? parseInt(page) : 100;
+    const newLimit = typeof limit === "string" ? parseInt(limit) : 5;
+    const newPage = typeof page === "string" ? parseInt(page) : 1;
 
     const [books, totalBooks] = await Promise.all([
       Book.find(query)

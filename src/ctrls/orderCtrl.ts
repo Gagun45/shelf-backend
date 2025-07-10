@@ -10,7 +10,9 @@ export const createOrder = async (req: Request, res: Response) => {
   try {
     const userPid = req.userPid;
     const items = req.body.items as { bookPid: string; quantity: number }[];
-    const bookPids = items.map((item) => item.bookPid);
+    const bookPids = items
+      .filter((b) => b.quantity > 0)
+      .map((item) => item.bookPid);
     const dbBooks = await Book.find({ bookPid: { $in: bookPids } });
     const orderBooks: BookOrderInterface[] = dbBooks.map((book) => {
       const cartItem = items.find((item) => item.bookPid === book.bookPid);
@@ -98,6 +100,10 @@ export const getAllOrders = async (req: Request, res: Response) => {
 export const editOrder = async (req: Request, res: Response) => {
   try {
     const { status, orderPid } = req.body;
+    if (!["pending", "success", "cancelled"].includes(status) || !orderPid) {
+      res.status(400).json({ message: "Bad data format" });
+      return;
+    }
     const newOrder = await Order.findOneAndUpdate(
       { orderPid },
       { status },

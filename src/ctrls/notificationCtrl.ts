@@ -20,6 +20,10 @@ export const updateStatusNotification = async (req: Request, res: Response) => {
   try {
     const userPid = req.userPid;
     const { notificationPid } = req.body;
+    if (!notificationPid) {
+      res.status(400).json({ message: "Notification pid required" });
+      return;
+    }
     await Notification.findOneAndUpdate(
       { userPid, notificationPid },
       { status: "read" }
